@@ -1,20 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import AppNavigator from "./src/navigation/AppNavigator";
+import { AuthProvider } from "./src/context/AuthContext";
+import { Provider as PaperProvider } from "react-native-paper";
+import { CustomTheme } from "./src/constants/Colors";
+import Toast from "react-native-toast-message";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <PaperProvider theme={CustomTheme}>
+      <AuthProvider>
+        <AppNavigator />
+        <Toast />
+      </AuthProvider>
+    </PaperProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
