@@ -1,35 +1,62 @@
 // src/helpers/becomeWorker.js
 
-import { Alert } from "react-native";
-import { supabase } from "../utils/supabase"; // Ensure the path is correct
+import Toast from "react-native-toast-message";
+import { supabase } from "../utils/supabase";
 
 export const becomeWorker = async () => {
-  // Use the asynchronous method to get the current user object
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    Alert.alert("Error", "You must be logged in to switch roles.");
+    Toast.show({
+      type: "error",
+      text1: "Authentication Error",
+      text2: "You must be logged in to continue.",
+    });
     return;
   }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({ role: "worker" }) // Set the role back to 'worker'
-    .eq("id", user.id); // Update only the current user's profile
+  try {
+    // 🔒 Check if provider has posted ANY jobs
+    const { count, error: jobError } = await supabase
+      .from("jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("provider_id", user.id);
 
-  if (error) {
-    Alert.alert("Role Update Error", error.message);
-    console.error("Supabase Role Update Error:", error.message);
-  } else {
-    Alert.alert(
-      "Success",
-      "You are now a Worker! Your view will update shortly."
-    );
+    if (jobError) throw jobError;
 
-    // CRUCIAL: Force the AuthContext to re-fetch the new role from the database.
-    // This tells the AppNavigator to switch from ProviderNavigator to WorkerNavigator.
-    supabase.auth.refreshSession();
+    if (count > 0) {
+      Toast.show({
+        type: "error",
+        text1: "Action Not Allowed",
+        text2: "You cannot switch to Worker after posting jobs.",
+      });
+      return;
+    }
+
+    // ✅ Update role
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role: "worker" })
+      .eq("id", user.id);
+
+    if (error) throw error;
+
+    Toast.show({
+      type: "success",
+      text1: "Role Updated",
+      text2: "You are now a Worker.",
+    });
+
+    // Refresh session so role-dependent UI updates
+    await supabase.auth.refreshSession();
+  } catch (err) {
+    console.error("Become Worker Error:", err);
+    Toast.show({
+      type: "error",
+      text1: "Update Failed",
+      text2: err.message || "Could not update role.",
+    });
   }
 };

@@ -113,63 +113,81 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     padding: 20,
+    backgroundColor: "#FFFFFF", // Keep base clean
   },
+
   // --- Logo & Title Section ---
   logoContainer: {
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 40,
   },
   logoIcon: {
-    marginBottom: 5,
+    marginBottom: 10,
+    // Optional: add a small black border box around your logo icon
+    padding: 10,
   },
   logoText: {
-    fontWeight: "800",
-    color: COLORS.textDark,
+    fontSize: 28,
+    fontWeight: "900", // Heavy weight
+    color: "#000000",
+    letterSpacing: -1,
   },
+
+  // --- Main Card (Flat UI Update) ---
   formContainer: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     padding: 25,
-    shadowColor: COLORS.textDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 6,
+    borderWidth: 2,
+    borderColor: "#000000",
   },
+
   title: {
-    marginBottom: 5,
+    fontSize: 24,
+    marginBottom: 6,
     textAlign: "center",
-    fontWeight: "700",
-    color: COLORS.textDark,
+    fontWeight: "900",
+    color: "#000000",
+    textTransform: "uppercase",
   },
   subtitle: {
+    fontSize: 14,
     marginBottom: 30,
     textAlign: "center",
     color: COLORS.textMuted,
-  },
-  // --- Buttons ---
-  loginButton: {
-    backgroundColor: COLORS.primary,
-    marginTop: 15,
-    borderRadius: 50,
-  },
-  registerButton: {
-    marginTop: 10,
-    backgroundColor: COLORS.secondary,
-    color: COLORS.primary,
-  },
-  registerButtonLabel: {
-    color: COLORS.textDark,
-  },
-  guestLinkContainer: {
-    marginTop: 10,
-    alignSelf: "flex-end", // Aligns to the left
+    fontWeight: "600",
   },
 
+  // --- Buttons (Pill Shaped & High Contrast) ---
+  loginButton: {
+    backgroundColor: COLORS.primary, // Action color
+    marginTop: 20,
+    borderRadius: 999, // Pill shape
+    borderWidth: 2,
+    borderColor: "#000000",
+  },
+  registerButton: {
+    marginTop: 12,
+    backgroundColor: "transparent",
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: "#000000",
+  },
+  registerButtonLabel: {
+    color: "#000000",
+    fontWeight: "800",
+    fontSize: 14,
+  },
+
+  // --- Links ---
+  guestLinkContainer: {
+    marginTop: 15,
+    alignSelf: "center", // Center looks better on auth screens
+  },
   guestLink: {
-    color: COLORS.primary, // Or COLORS.textDark if you prefer
-    fontSize: 12,
-    fontWeight: "500",
-    marginRight: 10,
+    color: "#000000",
+    fontSize: 13,
+    fontWeight: "700",
+    textDecorationLine: "underline", // Make it look clickable
   },
 });

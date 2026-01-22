@@ -1,60 +1,104 @@
-// src/helpers/fetchWorkerJobs.js (Final Reliable, Two-Query Version)
+// src/helpers/fetchWorkerJobs.js (Enhanced with Search, Filters, Sorting)
 import { supabase } from "../utils/supabase";
 
 /**
  * Fetches all jobs accepted by the currently authenticated user (Worker).
- * Uses two separate, simple queries for maximum reliability, avoiding complex RLS joins.
- * @returns {Array} List of job objects with the client/provider's name attached.
+ * Now supports:
+ *  - Search (title/category)
+ *  - Filters (location, category)
+ *  - Sorting (created_at_desc, budget_asc, etc.)
  */
-export const fetchWorkerJobs = async () => {
+export const fetchWorkerJobs = async (filters = {}) => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error("User must be logged in.");
-  } // --- Query 1: Fetch all jobs assigned to the current worker --- // Simple select with no joins.
+  }
 
-  const { data: jobs, error: jobsError } = await supabase
-    .from("jobs")
-    .select(`*`)
-    .eq("worker_id", user.id) // Filter by jobs accepted by this user
-    .order("created_at", { ascending: false });
+  // -----------------------
+  // BASE QUERY
+  // -----------------------
+  let query = supabase.from("jobs").select("*").eq("worker_id", user.id);
+
+  // -----------------------
+  // SEARCH
+  // -----------------------
+  if (filters.search) {
+    const search = `%${filters.search}%`;
+    query = query.or(`title.ilike.${search},category.ilike.${search}`);
+  }
+
+  // -----------------------
+  // LOCATION FILTER
+  // -----------------------
+  if (filters.location && filters.location !== "null") {
+    query = query.eq("location", filters.location);
+  }
+
+  // -----------------------
+  // CATEGORY FILTER
+  // -----------------------
+  if (filters.category && filters.category !== "null") {
+    query = query.eq("category", filters.category);
+  }
+
+  // -----------------------
+  // SORTING
+  // -----------------------
+  const sortString = filters.sort || "created_at_desc";
+
+  const lastUnderscore = sortString.lastIndexOf("_");
+  const column = sortString.substring(0, lastUnderscore); // e.g., "created_at"
+  const orderType = sortString.substring(lastUnderscore + 1); // e.g., "desc"
+
+  query = query.order(column, { ascending: orderType === "asc" });
+
+  // -----------------------
+  // EXECUTE MAIN QUERY
+  // -----------------------
+  const { data: jobs, error: jobsError } = await query;
 
   if (jobsError) {
     console.error("Error fetching worker jobs:", jobsError);
     throw jobsError;
   }
 
-  if (jobs.length === 0) {
+  if (!jobs || jobs.length === 0) {
     return [];
-  } // --- Query 2: Fetch client (provider) usernames for mapping --- // Get unique provider IDs (clients) who posted these jobs
+  }
 
+  // -----------------------
+  // FETCH PROVIDER PROFILES
+  // -----------------------
   const providerIds = [
     ...new Set(jobs.map((job) => job.provider_id).filter((id) => id)),
   ];
 
   let clientMap = {};
+
   if (providerIds.length > 0) {
-    // Simple select from profiles table using the IN filter
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
       .select("id, username")
       .in("id", providerIds);
 
-    if (profilesError) {
-      console.error("Error fetching client profiles:", profilesError);
-    } else {
-      // Create a quick lookup map: { 'provider_uuid': 'username' }
+    if (!profilesError && profiles) {
       clientMap = profiles.reduce((map, profile) => {
         map[profile.id] = profile.username;
         return map;
       }, {});
+    } else {
+      console.error("Error fetching client profiles:", profilesError);
     }
-  } // --- Step 3: Merge the data in JavaScript ---
+  }
 
+  // -----------------------
+  // MERGE
+  // -----------------------
   return jobs.map((job) => ({
-    ...job, // Lookup the client's username using the job's provider_id
+    ...job,
     client: job.provider_id ? clientMap[job.provider_id] || null : null,
   }));
 };

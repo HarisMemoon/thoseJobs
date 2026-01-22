@@ -1,22 +1,22 @@
-// src/screens/Provider/PostJobScreen.js (Updated with Custom Components)
+// src/screens/Provider/PostJobScreen.js (Clean & Simple Modern UI)
 import React, { useState, useMemo } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, Portal, TextInput, Button } from "react-native-paper"; // Removed TextInput, Button
+import { Text, Portal, TextInput, Divider } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { postJob } from "../../helpers/postJob";
 import { COLORS } from "../../constants/Colors";
 import SelectModal from "../../components/SelectModal";
-import CustomTextInput from "../../components/CustomTextInput"; // NEW IMPORT
-import CustomButton from "../../components/CustomButton"; // NEW IMPORT
+import CustomTextInput from "../../components/CustomTextInput";
+import CustomButton from "../../components/CustomButton";
+import SelectButton from "../../components/SelectButton";
 import Toast from "react-native-toast-message";
 
 const CATEGORIES = [
-  "Property Inspection",
-  "Minor Maintenance",
-  "Delivery",
-  "Moving Assistance",
-  "Gutter Cleaning",
-  "Signage Maintenance",
+  "Photos",
+  "Pickup/Dropoff",
+  "Walkthrough",
+  "Signange",
+  "Other",
 ];
 
 export default function PostJobScreen({ navigation }) {
@@ -101,105 +101,125 @@ export default function PostJobScreen({ navigation }) {
 
   return (
     <>
-      <ScrollView
-        style={[styles.container, { backgroundColor: COLORS.backgroundLight }]}
-        contentContainerStyle={styles.contentContainer}
-      >
-        <Text variant="headlineSmall" style={styles.title}>
+      {/* 1. HEADER SECTION (Outside ScrollView to allow full-width border) */}
+      <View style={styles.headerContainer}>
+        <Text variant="headlineMedium" style={styles.title}>
           Post a New Project
         </Text>
-
         <Text variant="bodyMedium" style={styles.subtitle}>
-          Fill out the details below to start the escrow process and hire a
-          worker.
+          Fill out the details to start the escrow process and hire a worker.
         </Text>
-        {/* --- CUSTOM TEXT INPUTS --- */}
+      </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        {/* <View style={styles.header}>
+          <Text variant="headlineMedium" style={styles.title}>
+            Post a New Project
+          </Text>
+          <Text variant="bodyMedium" style={styles.subtitle}>
+            Fill out the details to start the escrow process and hire a worker.
+          </Text>
+        </View> */}
 
-        <CustomTextInput
-          label="Job Title"
-          value={jobDetails.title}
-          onChangeText={(text) => handleChange("title", text)}
-          maxLength={100}
-        />
+        {/* Form Card */}
+        <View style={{ ...styles.formCard, borderRadius: 12 }}>
+          {/* Basic Information */}
+          <Text style={styles.sectionTitle}>Basic Information</Text>
 
-        <CustomTextInput
-          label="Description "
-          value={jobDetails.description}
-          onChangeText={(text) => handleChange("description", text)}
-        />
-
-        <CustomTextInput
-          label="Address / Location"
-          value={jobDetails.location}
-          onChangeText={(text) => handleChange("location", text)}
-        />
-
-        <CustomTextInput
-          label="Budget (Fixed Price)"
-          value={jobDetails.budget}
-          onChangeText={(text) =>
-            handleChange("budget", text.replace(/[^0-9.]/g, ""))
-          }
-          keyboardType="numeric"
-          left={<TextInput.Affix text="$" />}
-        />
-
-        <CustomTextInput
-          label="Special Requirements (Optional)"
-          value={jobDetails.special_requirements}
-          onChangeText={(text) => handleChange("special_requirements", text)}
-        />
-        {/* --- End Custom Text Inputs --- */}
-        {/* --- Category Dropdown Button (Uses base Button with custom styling) --- */}
-
-        <Button
-          mode="outlined"
-          onPress={() => setShowCategoryModal(true)}
-          icon="shape"
-          style={styles.categoryInput}
-          labelStyle={styles.categoryInputLabel}
-        >
-          Category: {jobDetails.category}
-        </Button>
-        {/* --- Deadline Button --- */}
-        <Button
-          mode="outlined"
-          onPress={() => setShowDatePicker(true)}
-          icon="calendar-clock"
-          style={styles.categoryInput}
-          labelStyle={styles.categoryInputLabel}
-        >
-          Deadline: {jobDetails.deadline_at.toLocaleDateString()}
-        </Button>
-
-        {showDatePicker && (
-          <DateTimePicker
-            value={jobDetails.deadline_at}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-            minimumDate={new Date()}
+          <CustomTextInput
+            label="Job Title"
+            value={jobDetails.title}
+            onChangeText={(text) => handleChange("title", text)}
+            maxLength={100}
+            required
           />
-        )}
-        {/* --- Dynamic Time Window Display --- */}
-        <View style={[styles.input, styles.timeWindowDisplay]}>
-          <Text style={{ fontWeight: "600", color: COLORS.textDark }}>
-            Time Window:
-          </Text>
 
-          <Text
-            style={{
-              color: COLORS.secondary,
-              fontWeight: "700",
-              marginLeft: 5,
-            }}
-          >
-            {calculatedTimeWindow}
-          </Text>
-        </View>
+          <SelectButton
+            label="Category"
+            value={jobDetails.category}
+            onPress={() => setShowCategoryModal(true)}
+          />
 
-        <View style={styles.buttonContainer}>
-          {/* --- Custom Secondary Button (Upload) --- */}
+          <CustomTextInput
+            label="Description"
+            value={jobDetails.description}
+            onChangeText={(text) => handleChange("description", text)}
+            multiline
+            numberOfLines={4}
+            required
+          />
+
+          <Divider style={styles.divider} />
+
+          {/* Location & Budget */}
+          <Text style={styles.sectionTitle}>Location & Budget</Text>
+
+          <CustomTextInput
+            label="Address / Location"
+            value={jobDetails.location}
+            onChangeText={(text) => handleChange("location", text)}
+            required
+          />
+
+          <CustomTextInput
+            label="Budget (Fixed Price)"
+            value={jobDetails.budget}
+            onChangeText={(text) =>
+              handleChange("budget", text.replace(/[^0-9.]/g, ""))
+            }
+            keyboardType="numeric"
+            left={<TextInput.Affix text="$" />}
+            required
+          />
+
+          <Divider style={styles.divider} />
+
+          {/* Timeline */}
+          <Text style={styles.sectionTitle}>Timeline</Text>
+
+          <SelectButton
+            label="Deadline"
+            value={jobDetails.deadline_at.toLocaleDateString("en-US", {
+              weekday: "short",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+            onPress={() => setShowDatePicker(true)}
+          />
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={jobDetails.deadline_at}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+              minimumDate={new Date()}
+            />
+          )}
+
+          {/* Time Window Display */}
+          <View style={styles.timeWindowCard}>
+            <Text style={styles.timeWindowLabel}>Estimated Time Window</Text>
+            <Text style={styles.timeWindowValue}>{calculatedTimeWindow}</Text>
+          </View>
+
+          <Divider style={styles.divider} />
+
+          {/* Additional Details */}
+          <Text style={styles.sectionTitle}>Additional Details</Text>
+
+          <CustomTextInput
+            label="Special Requirements (Optional)"
+            value={jobDetails.special_requirements}
+            onChangeText={(text) => handleChange("special_requirements", text)}
+            multiline
+            numberOfLines={3}
+          />
 
           <CustomButton
             type="secondary"
@@ -207,22 +227,21 @@ export default function PostJobScreen({ navigation }) {
             icon="camera"
             onPress={() => {
               Toast.show({
-                type: "success",
+                type: "info",
                 text1: "Upload Feature",
                 text2: "Image upload coming soon.",
               });
             }}
-            style={styles.uploadButtonOverride}
           />
-          {/* --- Custom Primary Button (Submit) --- */}
-
+          {/* Submit Button */}
           <CustomButton
             type="primary"
-            title="Post Job"
+            title="Post Job & Start Escrow"
+            icon="check"
             onPress={handlePostJob}
             loading={loading}
             disabled={loading}
-            style={styles.submitButtonOverride}
+            style={styles.submitButton}
           />
         </View>
       </ScrollView>
@@ -242,53 +261,82 @@ export default function PostJobScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  contentContainer: { padding: 20, paddingBottom: 40 },
-  title: { fontWeight: "700", marginBottom: 5, color: COLORS.textDark },
-  subtitle: { marginBottom: 20, color: COLORS.textMuted },
-  input: {
-    marginBottom: 15,
-    backgroundColor: COLORS.surface,
-    borderColor: COLORS.accentHighlight,
-  }, // Specific styling for the Category/Deadline buttons to mimic TextInput border/padding
-  categoryInput: {
-    marginBottom: 15,
-    backgroundColor: COLORS.surface,
-    borderColor: COLORS.accentHighlight,
-    borderRadius: 5,
-    borderWidth: 1, // Needed to mimic outlined mode border
-  },
-  // Apply specific label styling needed for custom buttons
-  categoryInputLabel: {
-    color: COLORS.textDark,
-    textAlign: "left",
+  fullContainer: {
     flex: 1,
-    paddingLeft: 10,
-    fontSize: 15, // Match text input size
-    justifyContent: "flex-start",
-    fontWeight: "normal",
-  },
-  timeWindowDisplay: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 15,
-    borderWidth: 1,
-    borderRadius: 5,
     backgroundColor: COLORS.surface,
-    borderColor: COLORS.accentHighlight,
-    marginBottom: 15,
   },
-  buttonContainer: {
-    width: "100%",
-    flexDirection: "column",
-    marginTop: 20,
-    gap: 15,
+  // 🌟 NEW: Header container sits above the ScrollView
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+    backgroundColor: "#FFFFFF",
+    // This creates the full-width solid black line
+    borderBottomWidth: 1,
+    borderBottomColor: "#000000",
   },
-  // Overrides to match the exact spacing/shape from original styles, but uses CustomButton logic
-  uploadButtonOverride: {
-    backgroundColor: COLORS.accentHighlight,
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
   },
-  submitButtonOverride: {
-    // No explicit style needed here as CustomButton handles the primary styling
+  contentContainer: {
+    padding: 20, // Padding for the cards inside
+  },
+  title: {
+    fontSize: 22, // Adjusted for hierarchy
+    fontWeight: "900", // Extra bold
+    color: "#000000",
+  },
+  subtitle: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  formCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: "#000000",
+    overflow: "hidden",
+    elevation: 0,
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#000000",
+    // Clean professional look
+    letterSpacing: 1,
+  },
+  divider: {
+    marginVertical: 10,
+    height: 1.5,
+    backgroundColor: "#000000",
+  },
+  timeWindowCard: {
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1.5,
+    borderColor: "#000000",
+    borderStyle: "dashed",
+  },
+  timeWindowLabel: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    fontWeight: "700",
+
+    marginBottom: 4,
+  },
+  timeWindowValue: {
+    fontSize: 18,
+    color: "#000000",
+    fontWeight: "800",
+  },
+  submitButton: {
+    marginTop: 10,
   },
 });

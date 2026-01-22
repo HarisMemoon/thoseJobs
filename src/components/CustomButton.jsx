@@ -1,12 +1,12 @@
 // src/components/CustomButton.js
 import React from "react";
-import { Button, View } from "react-native-paper";
+import { Button } from "react-native-paper";
 import { StyleSheet } from "react-native";
 import { COLORS } from "../constants/Colors";
 
 /**
  * Reusable Button Component
- * @param {string} type - 'primary' (default, solid blue), 'secondary' (contained-tonal/upload)
+ * @param {string} type - 'primary' (default, solid), 'secondary' (outlined)
  * @param {string} title - Button text
  * @param {object} props - Passes through standard Button props (onPress, loading, disabled, icon)
  */
@@ -17,22 +17,24 @@ export default function CustomButton({
   ...props
 }) {
   const isPrimary = type === "primary";
-  const isSecondary = type === "secondary";
 
   return (
     <Button
-      mode={isPrimary ? "contained" : "contained-tonal"}
-      // Apply standard submit button dimensions/shape/shadow for primary type
+      mode={isPrimary ? "contained" : "outlined"}
       style={[
         styles.baseButton,
-        isPrimary ? styles.submitButton : styles.uploadButton,
+        isPrimary && styles.primaryButton,
+        !isPrimary && styles.secondaryButton,
         style,
       ]}
       contentStyle={styles.buttonContent}
-      labelStyle={
-        isPrimary ? styles.submitButtonLabel : styles.uploadButtonLabel
-      }
-      buttonColor={isPrimary ? COLORS.primary : COLORS.accentHighlight}
+      labelStyle={[
+        styles.baseLabel,
+        isPrimary && styles.primaryLabel,
+        !isPrimary && styles.secondaryLabel,
+      ]}
+      buttonColor={isPrimary ? COLORS.primary : "transparent"}
+      textColor={isPrimary ? "#ffffff" : "#000000"}
       {...props}
     >
       {title}
@@ -41,36 +43,36 @@ export default function CustomButton({
 }
 
 const styles = StyleSheet.create({
-  baseButton: {
-    height: 40,
-    borderRadius: 50,
+  baseButtonSmall: {
+    borderRadius: 999,
+    // Reduce height from 52 to 36-40
+    minHeight: 38,
+    // Tighter horizontal padding
+    paddingHorizontal: 16,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "row",
   },
-  buttonContent: {
-    paddingVertical: 0,
-  },
-  // Matches the styles.uploadButton from the original code
-  uploadButton: {
-    backgroundColor: COLORS.accentHighlight,
-  },
-  uploadButtonLabel: {
+  baseLabelSmall: {
+    // 13-14px is the sweet spot for small buttons
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.textDark, // Ensure contrast against light background
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
-  // Matches the styles.submitButton from the original code
-  submitButton: {
-    // Shadow and elevation styles from original submitButton
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
+  // Use the same primary/secondary color logic as before
+  primaryButtonSmall: {
+    backgroundColor: COLORS.primary,
+    // Smaller shadow/elevation for smaller objects
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
   },
-  submitButtonLabel: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#ffffff",
+  secondaryButtonSmall: {
+    borderWidth: 1.5, // Thinner border for a smaller button
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
   },
 });

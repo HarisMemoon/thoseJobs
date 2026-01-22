@@ -1,6 +1,5 @@
-// src/components/SelectModal.js (Modern Enhanced Version)
 import React from "react";
-import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { Modal, Portal, Text, Divider } from "react-native-paper";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
 import { COLORS } from "../constants/Colors";
@@ -12,6 +11,7 @@ export default function SelectModal({
   selectedItem,
   items,
   title,
+  labels,
 }) {
   const handleSelect = (item) => {
     onSelect(item);
@@ -25,36 +25,38 @@ export default function SelectModal({
         onDismiss={onDismiss}
         contentContainerStyle={styles.modalContainer}
       >
-        {/* Cross Icon */}
-        <TouchableOpacity onPress={onDismiss} style={styles.closeIcon}>
-          <Icon name="close" size={22} color="#777" />
-        </TouchableOpacity>
+        {/* CLOSE */}
+        <Pressable onPress={onDismiss} style={styles.closeIcon}>
+          <Icon name="close" size={22} color="#6B7280" />
+        </Pressable>
 
-        {/* Title */}
+        {/* HEADER */}
         <View style={styles.header}>
-          <Text variant="titleLarge" style={styles.titleText}>
-            {title || "Select Option"}
-          </Text>
+          <Text style={styles.titleText}>{title || "Choose an option"}</Text>
+          <Text style={styles.subtitle}>Select one to continue</Text>
         </View>
 
         <Divider style={styles.divider} />
 
-        {/* Scrollable Options */}
+        {/* LIST */}
         <ScrollView
           style={styles.scrollArea}
           showsVerticalScrollIndicator={false}
         >
-          {items.map((item) => {
+          {items.map((item, index) => {
+            const label =
+              item === null ? "Not Selected" : labels?.[index] ?? String(item);
+
             const isSelected = item === selectedItem;
 
             return (
-              <TouchableOpacity
-                key={item}
+              <Pressable
+                key={item ?? `null-${index}`}
                 onPress={() => handleSelect(item)}
-                activeOpacity={0.8}
-                style={[
+                style={({ pressed }) => [
                   styles.optionRow,
-                  isSelected && styles.optionRowSelected,
+                  isSelected && styles.optionSelected,
+                  pressed && styles.optionPressed,
                 ]}
               >
                 <Text
@@ -63,18 +65,16 @@ export default function SelectModal({
                     isSelected && styles.optionTextSelected,
                   ]}
                 >
-                  {item}
+                  {label}
                 </Text>
 
-                {isSelected && (
-                  <Icon
-                    name="check-circle"
-                    size={22}
-                    color={COLORS.primary}
-                    style={{ marginLeft: 10 }}
-                  />
-                )}
-              </TouchableOpacity>
+                {/* RIGHT INDICATOR */}
+                <Icon
+                  name={isSelected ? "check-circle" : "chevron-right"}
+                  size={20}
+                  color={isSelected ? COLORS.primary : "#9CA3AF"}
+                />
+              </Pressable>
             );
           })}
         </ScrollView>
@@ -85,66 +85,94 @@ export default function SelectModal({
 
 const styles = StyleSheet.create({
   modalContainer: {
-    padding: 22,
-    marginHorizontal: 25,
-    borderRadius: 12,
-    backgroundColor: "white",
-    elevation: 5,
-    position: "relative",
+    paddingTop: 24,
+    paddingBottom: 10,
+    paddingHorizontal: 18,
+    marginHorizontal: 22,
+
+    // THE FLAT UI UPDATE
+    borderRadius: 12, // Match your card radius
+    backgroundColor: "#FFFFFF",
+    borderWidth: 0.5, // Solid black border
+    borderColor: "#000000",
+    elevation: 0, // Kill the shadow
   },
 
   closeIcon: {
     position: "absolute",
-    right: 12,
-    top: 12,
+    right: 14,
+    top: 14,
     padding: 6,
     zIndex: 10,
+    // Optional: add a border to the close icon to make it a tiny box
+
+    borderRadius: 4,
+    backgroundColor: "#FFFFFF",
   },
 
   header: {
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingRight: 24,
+    paddingBottom: 12,
+    paddingRight: 32,
   },
 
   titleText: {
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "800", // Heavier for the high-contrast look
     color: COLORS.textDark,
-    fontSize: 20,
+  },
+
+  subtitle: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    marginTop: 2,
+    fontWeight: "600",
   },
 
   divider: {
-    backgroundColor: COLORS.accentHighlight,
+    height: 1.5,
+    backgroundColor: "#000000", // Solid black divider
     marginBottom: 8,
   },
 
   scrollArea: {
-    maxHeight: 330,
-    paddingVertical: 4,
+    maxHeight: 360,
+    paddingVertical: 6,
   },
 
   optionRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+
     paddingVertical: 14,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    marginBottom: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginBottom: 10,
+
+    // Plain look for options
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB", // Subtle border for non-selected
   },
 
-  optionRowSelected: {
-    backgroundColor: "rgba(37, 99, 235, 0.15)", // sub 15% opacity
+  optionPressed: {
+    backgroundColor: "#F3F4F6", // Light grey on press
+  },
+
+  optionSelected: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#000000", // Black border for selected
+    borderWidth: 0.5, // Thicker border for selected
   },
 
   optionText: {
-    fontSize: 17,
+    fontSize: 15,
     color: COLORS.textDark,
-    fontWeight: "500",
+    fontWeight: "600",
   },
 
   optionTextSelected: {
-    color: COLORS.primary,
-    fontWeight: "700",
+    color: "#000000",
+    fontWeight: "800",
   },
 });

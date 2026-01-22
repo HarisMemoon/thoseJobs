@@ -9,11 +9,11 @@ import { COLORS } from "../constants/Colors";
 const getStatusColor = (status) => {
   switch (status) {
     case "posted": // Primary action needed (Worker: Accept)
-      return { background: "rgba(37, 99, 235, 0.4)", text: COLORS.primary };
+      return { background: COLORS.blue, text: COLORS.primary };
     case "submitted": // Pending Approval (Worker: Waiting, Provider: Action Needed)
-      return { background: "#FACC15", text: "#78350F" }; // Yellow/Amber
+      return { background: COLORS.yellow, text: "#78350F" }; // Yellow/Amber
     case "accepted": // Job is Live/In Progress
-      return { background: "#6EE7B7", text: "#065F46" }; // Mint Green
+      return { background: COLORS.green, text: "#065F46" }; // Mint Green
     case "completed": // Work done, waiting for payout/final review
     case "approved":
       return { background: "#34D399", text: "#047857" }; // Strong Green
@@ -51,7 +51,7 @@ export default function JobCard({
     if (status === "submitted") {
       return "Waiting for Approval";
     }
-    return status === "accepted" ? "View Progress" : "Accept Job";
+    return status === "accepted" ? "View Details" : "Accept Job";
   };
 
   const getActionIcon = () => {
@@ -87,20 +87,13 @@ export default function JobCard({
   };
 
   return (
-    <View
-      style={[styles.cardWrapper, { borderLeftColor: statusStyle.background }]}
-    >
+    <View style={[styles.cardWrapper]}>
       {/* 1. Header: Title */}
       <View style={styles.header}>
         <Text style={styles.titleText}>{title}</Text>
       </View>
 
-      <View
-        style={[
-          styles.payoutBadgeContainer,
-          { backgroundColor: statusStyle.background },
-        ]}
-      >
+      <View style={[styles.payoutBadgeContainer]}>
         <Text style={styles.payoutBadgeText}>{budget}</Text>
       </View>
 
@@ -174,15 +167,12 @@ export default function JobCard({
       {/* 4. Action Button (Uses CustomButton) */}
       {!shouldHideButton && (
         <CustomButton
-          type="text"
+          type="primary"
           title={getActionText()}
           onPress={onPress}
           icon={getActionIcon()}
           disabled={isDisabled} // Disable for worker in 'submitted' state
-          style={[
-            styles.actionButton,
-            { backgroundColor: statusStyle.background },
-          ]}
+          style={[styles.actionButton]}
         />
       )}
     </View>
@@ -191,17 +181,19 @@ export default function JobCard({
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
     padding: 16,
     marginVertical: 10,
-    shadowColor: COLORS.textDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 5,
-    borderLeftWidth: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderLeftWidth: 1,
+    borderColor: "#000000",
+    borderLeftColor: "#000000",
+    // shadowColor: COLORS.textDark,
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 6,
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -215,9 +207,10 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   payoutBadgeContainer: {
+    backgroundColor: COLORS.secondary,
     paddingVertical: 5,
     paddingHorizontal: 10,
-    borderRadius: 6,
+    borderRadius: 4,
     alignSelf: "flex-start", // Important: controls its width
     marginBottom: 10,
   },
@@ -270,6 +263,8 @@ const styles = StyleSheet.create({
   // Action Button (uses CustomButton styling)
   actionButton: {
     marginTop: 15,
+    backgroundColor: COLORS.primary,
+    color: "#fff",
     width: "100%",
   },
 });

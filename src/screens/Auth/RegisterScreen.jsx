@@ -162,42 +162,61 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     padding: 20,
+    backgroundColor: "#FFFFFF",
   },
+
+  // --- Main Card (The Bordered Container) ---
   formContainer: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 25,
-    shadowColor: COLORS.textDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 6,
+    borderWidth: 2, // Bold 2px border
+    borderColor: "#000000",
+
+    // // Solid Black Offset Shadow (No blur)
+    // shadowColor: "#000000",
+    // shadowOffset: { width: 6, height: 6 },
+    // shadowOpacity: 1,
+    // shadowRadius: 0,
+    // elevation: 0, // Removed material elevation
   },
+
   title: {
-    marginBottom: 5,
+    fontSize: 24,
+    marginBottom: 6,
     textAlign: "center",
-    fontWeight: "700",
-    color: COLORS.textDark,
+    fontWeight: "900", // Maximum weight for impact
+    color: "#000000",
+    textTransform: "uppercase", // Clean professional look
+    letterSpacing: 1,
   },
   subtitle: {
+    fontSize: 14,
     marginBottom: 30,
     textAlign: "center",
-    color: COLORS.textDark,
+    color: "#000000",
+    fontWeight: "600",
+    opacity: 0.7, // Muted without using a different color
   },
+
+  // --- Action Button ---
   registerButton: {
     marginTop: 20,
-    backgroundColor: COLORS.secondary, // Using primary color for consistency
+    borderRadius: 999, // Perfect pill shape
+    borderWidth: 2,
+    borderColor: "#000000",
+    backgroundColor: COLORS.secondary,
   },
 
+  // --- Secondary Links ---
   guestLinkContainer: {
-    marginTop: 10,
-    alignSelf: "flex-end", // Aligns to the left
+    marginTop: 15,
+    alignSelf: "center", // Centered for better balance in auth
   },
-
   guestLink: {
-    color: COLORS.primary, // Or COLORS.textDark if you prefer
-    fontSize: 12,
-    fontWeight: "500",
-    marginRight: 10,
+    color: "#000000",
+    fontSize: 13,
+    fontWeight: "800",
+    textDecorationLine: "underline", // Clear visual affordance
   },
 });

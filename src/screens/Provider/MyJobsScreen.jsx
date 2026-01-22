@@ -1,4 +1,4 @@
-// src/screens/Provider/MyJobsScreen.js
+// src/screens/Provider/MyJobsScreen.js (FINAL CORRECTED VERSION)
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -17,6 +17,8 @@ import Toast from "react-native-toast-message";
 
 // ⬇️ NEW IMPORT
 import ConfirmationModal from "../../components/ConfirmationModal";
+import JobSearchAndFilter from "../../components/JobSearchAndFilter";
+import JobDetailsModal from "../../components/JobDetailsModal";
 
 export default function MyJobsScreen() {
   const theme = useTheme();
@@ -24,6 +26,15 @@ export default function MyJobsScreen() {
   const [listLoading, setListLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null); // <-- NEW: Store the whole job object
+  const [jobDetailsModalVisible, setJobDetailsModalVisible] = useState(false);
+  const initialFilters = {
+    search: "",
+    sort: "created_at_desc",
+    location: null,
+    category: null,
+  };
+  const [filters, setFilters] = useState(initialFilters);
 
   // ⬇️ NEW STATE FOR CONFIRMATION MODAL
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
@@ -32,7 +43,8 @@ export default function MyJobsScreen() {
   const loadJobs = async () => {
     setIsRefreshing(true);
     try {
-      const fetchedJobs = await fetchProviderJobs();
+      // Note: Filters are now passed from the JobSearchAndFilter component via its state handler
+      const fetchedJobs = await fetchProviderJobs(filters);
       setJobs(fetchedJobs);
     } catch (error) {
       Toast.show({
@@ -40,7 +52,6 @@ export default function MyJobsScreen() {
         text1: "Data Error",
         text2: error.message || "Failed to load your posted jobs.",
       });
-
       setJobs([]);
     } finally {
       setListLoading(false);
@@ -50,9 +61,8 @@ export default function MyJobsScreen() {
 
   useEffect(() => {
     loadJobs();
-  }, []);
+  }, [filters]);
 
-  // ⬇️ OPEN CUSTOM MODAL INSTEAD OF Alert.alert
   const handleApproveJob = (jobId) => {
     setSelectedJobId(jobId);
     setConfirmModalVisible(true);
@@ -84,11 +94,11 @@ export default function MyJobsScreen() {
   };
 
   const handleJobAction = (job) => {
-    if (job.status === "submitted") {
-      handleApproveJob(job.id);
-    } else {
-      console.log("Navigating to Job Management for:", job.id);
-    }
+    // 1. Set the job data
+    setSelectedJob(job);
+
+    // 2. Always open the details modal, regardless of status
+    setJobDetailsModalVisible(true);
   };
 
   const handleSwitchToWorker = async () => {
@@ -96,7 +106,24 @@ export default function MyJobsScreen() {
     await becomeWorker();
     setIsSwitching(false);
   };
+  const handleModalPrimaryAction = (jobId) => {
+    const job = jobs.find((j) => j.id === jobId);
 
+    // 1. Close the details modal
+    setJobDetailsModalVisible(false);
+
+    // 2. Check if the action needed is approval
+    if (job.status === "submitted") {
+      // Instead of directly running the helper (which uses a small Alert),
+      // we display the ConfirmationModal (Final Approval prompt)
+      setSelectedJobId(jobId);
+      setConfirmModalVisible(true); // <-- This opens the final confirmation modal
+    } else {
+      // For 'posted' jobs (View Applicants), or other actions, navigate to the next screen
+      // (You would typically navigate to a Job Details/Chat page here)
+      console.log("Viewing full job details or opening chat for job:", jobId);
+    }
+  };
   const renderContent = () => {
     if (listLoading) {
       return (
@@ -140,6 +167,11 @@ export default function MyJobsScreen() {
 
   return (
     <View style={styles.fullContainer}>
+      <JobSearchAndFilter
+        currentFilters={filters}
+        onFilterChange={setFilters}
+        type="provider"
+      />
       <View style={styles.headerContainer}>
         <Text variant="headlineSmall" style={styles.title}>
           My Posted Projects ({jobs.length})
@@ -148,7 +180,6 @@ export default function MyJobsScreen() {
           Manage job details, applicants, and escrow payouts.
         </Text>
       </View>
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
@@ -161,6 +192,7 @@ export default function MyJobsScreen() {
         }
       >
         {renderContent()}
+
         <View style={{ height: 50 }} />
       </ScrollView>
 
@@ -174,6 +206,14 @@ export default function MyJobsScreen() {
         onConfirm={confirmApproval}
         onCancel={() => setConfirmModalVisible(false)}
       />
+      {/* 2. Job Details Modal (NEW: Used for all other statuses) */}
+      <JobDetailsModal
+        visible={jobDetailsModalVisible}
+        job={selectedJob}
+        type="provider"
+        onClose={() => setJobDetailsModalVisible(false)}
+        onPrimaryAction={handleModalPrimaryAction}
+      />
     </View>
   );
 }
@@ -181,7 +221,7 @@ export default function MyJobsScreen() {
 const styles = StyleSheet.create({
   fullContainer: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#fff",
   },
   headerContainer: {
     paddingHorizontal: 16,
@@ -189,7 +229,15 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
+    borderBottomColor: "#000",
+  },
+  subHeaderContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
+    alignItems: "center",
   },
   title: {
     fontSize: 18,
@@ -230,5 +278,17 @@ const styles = StyleSheet.create({
   emptyTextMuted: {
     color: COLORS.textMuted,
     textAlign: "center",
+  },
+  switchContainer: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    width: "100%",
+    alignItems: "center",
+  },
+  switchButton: {
+    width: "100%",
+    paddingVertical: 5,
   },
 });

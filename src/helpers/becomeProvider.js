@@ -1,36 +1,62 @@
 // src/helpers/becomeProvider.js
 
-// Make sure to import the necessary components:
-import { Alert } from "react-native";
-import { supabase } from "../utils/supabase"; // <-- ENSURE THIS PATH IS CORRECT
+import Toast from "react-native-toast-message";
+import { supabase } from "../utils/supabase";
 
 export const becomeProvider = async () => {
-  // Use the synchronous method to get the current user session data
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    Alert.alert("Error", "You must be logged in to become a provider.");
+    Toast.show({
+      type: "error",
+      text1: "Authentication Error",
+      text2: "You must be logged in to continue.",
+    });
     return;
   }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({ role: "provider" })
-    .eq("id", user.id); // Use user.id from the retrieved object
+  try {
+    // 🔒 Check if worker has submitted ANY quotes
+    const { count, error: quoteError } = await supabase
+      .from("quotations")
+      .select("id", { count: "exact", head: true })
+      .eq("worker_id", user.id);
 
-  if (error) {
-    Alert.alert("Role Update Error", error.message);
-    console.error("Supabase Role Update Error:", error.message);
-  } else {
-    Alert.alert(
-      "Success",
-      "You are now a Provider! Your view will update shortly."
-    );
+    if (quoteError) throw quoteError;
 
-    // CRUCIAL: Force the AuthContext to re-fetch the new role from the database.
-    // This tells the AppNavigator to switch from WorkerNavigator to ProviderNavigator.
-    supabase.auth.refreshSession();
+    if (count > 0) {
+      Toast.show({
+        type: "error",
+        text1: "Action Not Allowed",
+        text2: "You cannot become a Provider after submitting job quotes.",
+      });
+      return;
+    }
+
+    // ✅ Update role
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role: "provider" })
+      .eq("id", user.id);
+
+    if (error) throw error;
+
+    Toast.show({
+      type: "success",
+      text1: "Role Updated",
+      text2: "You are now a Provider.",
+    });
+
+    // Refresh session so role-dependent UI updates
+    await supabase.auth.refreshSession();
+  } catch (err) {
+    console.error("Become Provider Error:", err);
+    Toast.show({
+      type: "error",
+      text1: "Update Failed",
+      text2: err.message || "Could not update role.",
+    });
   }
 };

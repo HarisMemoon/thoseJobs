@@ -15,13 +15,7 @@ export default function AppHeader({ onMenuPress }) {
   return (
     <View style={styles.header}>
       {/* LEFT — Menu Button */}
-      <TouchableOpacity
-        onPress={onMenuPress}
-        style={styles.menuButton}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Icon name="menu" size={28} color="#4B5563" />
-      </TouchableOpacity>
+      <View style={{ width: 28 }} />
 
       {/* CENTER — Logo */}
       <View style={styles.logoContainer}>
@@ -35,7 +29,13 @@ export default function AppHeader({ onMenuPress }) {
       </View>
 
       {/* RIGHT — Empty placeholder to balance center alignment */}
-      <View style={{ width: 28 }} />
+      <TouchableOpacity
+        onPress={onMenuPress}
+        style={styles.menuButton}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Icon name="menu" size={28} color="#4B5563" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: "#000",
   },
   logoContainer: {
     marginRight: 15,
